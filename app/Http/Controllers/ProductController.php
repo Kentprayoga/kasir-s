@@ -35,10 +35,12 @@ class ProductController extends Controller
     }
 
     // Form edit produk
-    public function edit(Product $product)
+    public function edit($id)
     {
+        $product = Product::findOrFail($id);
         return view('products.edit', compact('product'));
     }
+
 
     // Update produk
     public function update(Request $request, Product $product)

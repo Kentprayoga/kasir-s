@@ -3,12 +3,13 @@
     <li class="nav-item nav-profile">
       <!-- Profile section (optional) -->
     </li>
-    <li class="nav-item">
-      <a class="nav-link" href="{{ route('dashboard') }}">
-        <span class="menu-title">Dashboard</span>
-        <i class="mdi mdi-home menu-icon"></i>
-      </a>
-    </li>
+<li class="nav-item">
+  <a class="nav-link" href="{{ route('dashboard') }}">
+    <span class="menu-title">Dashboard</span>
+    <i class="mdi mdi-home menu-icon"></i>
+  </a>
+</li>
+
 
     <!-- Stok Gudang Menu -->
     <li class="nav-item">
@@ -28,7 +29,7 @@
         <ul class="nav flex-column sub-menu">
           <!-- Sub-menu for Stok Gudang -->
           <li class="nav-item">
-            <a class="nav-link" href="{{ route('transactions.create') }}">kasir</a>
+            <a class="nav-link" href="{{ route('kasir.create') }}">kasir</a>
           </li>
           <!-- Sub-menu for Stok Toko -->
           <li class="nav-item">

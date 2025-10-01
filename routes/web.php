@@ -14,7 +14,7 @@ use App\Http\Controllers\DashboardController;
 Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])
     ->name('transactions.show');
 // 
-Route::get('/dashboard', [DashboardController::class, 'index'])
+Route::get('/', [DashboardController::class, 'index'])
     ->name('dashboard')
     ->middleware('auth');
 // 
@@ -22,6 +22,9 @@ Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('login', [LoginController::class, 'login']);
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 // Stok Gudang
+
+// 
+
 Route::get('/stok-gudang', [StokGudangController::class,'index'])->name('stok-gudang.index');
 Route::post('/stok-gudang', [StokGudangController::class,'store'])->name('stok-gudang.store');
 Route::post('/stok-gudang/update/{id}', [StokGudangController::class,'update'])->name('stok-gudang.update');
@@ -32,10 +35,13 @@ Route::resource('shifts', ShiftController::class)->middleware('auth');
 Route::resource('expenses', ExpenseController::class);
 
 // penjualan
-Route::get('transactions/create', [TransactionController::class, 'create'])->name('transactions.create');
+// 🔹 Route untuk create harus di atas route yang pakai {id}
+Route::get('kasir/create', [TransactionController::class, 'create'])->name('kasir.create');
+
 Route::post('transactions', [TransactionController::class, 'store'])->name('transactions.store');
-Route::get('transactions/{id}/receipt', [TransactionController::class, 'receipt'])->name('transactions.receipt');
 Route::get('transactions', [TransactionController::class, 'index'])->name('transactions.index');
+Route::get('transactions/{id}/receipt', [TransactionController::class, 'receipt'])->name('transactions.receipt');
+
 // Stok Toko
 Route::get('/stok-toko', [StokTokoController::class,'index'])->name('stok-toko.index');
 Route::post('/stok-toko', [StokTokoController::class,'store'])->name('stok-toko.store');

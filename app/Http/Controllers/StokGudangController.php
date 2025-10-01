@@ -8,6 +8,16 @@ use App\Models\StokGudangLog;
 
 class StokGudangController extends Controller
 {
+
+public function getData()
+{
+    $stokGudangs = StokGudang::with('logs')->orderBy('nama_barang')->get();
+
+    return response()->json([
+        'data' => $stokGudangs
+    ]);
+}
+
     // Tampilkan semua stok gudang
     public function index()
     {
