@@ -11,11 +11,24 @@ use Illuminate\Support\Facades\DB;
 
 class TransactionController extends Controller
 {
-    public function index()
-    {
-        $transactions = Transaction::with('items.product')->latest()->paginate(10);
-        return view('transactions.index', compact('transactions'));
+public function index(Request $request)
+{
+    $query = Transaction::with('items.product');
+
+    // Jika filter = semua -> tampilkan semua
+    if ($request->filter === 'semua') {
+        // Tidak ada filter tanggal
+    } else {
+        // Default = hari ini
+        $tanggal = $request->tanggal ?? now()->toDateString();
+        $query->whereDate('tanggal_transaksi', $tanggal);
     }
+
+    $transactions = $query->latest()->paginate(10);
+
+    return view('transactions.index', compact('transactions'));
+}
+
 
     public function create()
     {

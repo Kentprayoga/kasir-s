@@ -153,23 +153,32 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Tambah baris
-    document.getElementById("add-row").addEventListener("click", function () {
-        let newRow = document.querySelector("#items-table tbody tr").cloneNode(true);
-        newRow.querySelectorAll("input, select").forEach(input => {
+// Tambah baris
+document.getElementById("add-row").addEventListener("click", function () {
+    let newRow = document.querySelector("#items-table tbody tr").cloneNode(true);
+
+    // Reset field
+    newRow.querySelectorAll("input, select").forEach(input => {
+        if (input.classList.contains("qty-input")) {
+            input.value = 1; // ✅ qty default 1
+        } else {
             input.value = "";
-            input.style.backgroundColor = ""; 
-        });
-        newRow.querySelector(".harga").textContent = "0";
-        newRow.querySelector(".subtotal").textContent = "0";
-        newRow.dataset.subtotal = 0;
-
-        newRow.querySelector(".product-select").setAttribute("name", `items[${rowIndex}][product_id]`);
-        newRow.querySelector(".qty-input").setAttribute("name", `items[${rowIndex}][qty]`);
-        rowIndex++;
-
-        document.querySelector("#items-table tbody").appendChild(newRow);
-        updateRow(newRow);
+        }
+        input.style.backgroundColor = ""; 
     });
+
+    newRow.querySelector(".harga").textContent = "0";
+    newRow.querySelector(".subtotal").textContent = "0";
+    newRow.dataset.subtotal = 0;
+
+    newRow.querySelector(".product-select").setAttribute("name", `items[${rowIndex}][product_id]`);
+    newRow.querySelector(".qty-input").setAttribute("name", `items[${rowIndex}][qty]`);
+    rowIndex++;
+
+    document.querySelector("#items-table tbody").appendChild(newRow);
+    updateRow(newRow);
+});
+
 
     // Event delegation
     document.addEventListener("change", function (e) {
