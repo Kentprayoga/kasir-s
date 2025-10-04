@@ -11,6 +11,13 @@ class Transaction extends Model
         protected $casts = [
         'tanggal_transaksi' => 'datetime', // ✅ biar otomatis jadi Carbon
     ];
+
+// App/Models/Transaction.php
+public function setUangDibayarAttribute($value)
+{
+    $this->attributes['uang_dibayar'] = str_replace('.', '', $value);
+}
+
     public function items()
     {
         return $this->hasMany(TransactionItem::class);

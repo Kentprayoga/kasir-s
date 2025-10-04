@@ -29,45 +29,45 @@ public function store(Request $request)
         'items' => 'required|array',
         'items.*.product_id' => 'required|exists:products,id',
         'items.*.qty' => 'required|integer|min:1',
-        'uang_dibayar' => 'required|numeric|min:0',
+        'uang_dibayar' => 'required',
     ]);
 
     DB::beginTransaction();
     try {
         $total = 0;
 
-        // 🔹 Ambil shift aktif
         $shift = \App\Models\Shift::whereNull('jam_selesai')->latest()->first();
         if (!$shift) {
             return back()->with('error', 'Tidak ada shift aktif. Harap buka shift terlebih dahulu!');
         }
 
-        // 🔹 Generate nomor struk
-        $today = \Carbon\Carbon::now()->format('Ymd');
-        $lastTransaction = \App\Models\Transaction::whereDate('tanggal_transaksi', \Carbon\Carbon::today())
+        $today = Carbon::now()->format('Ymd');
+        $lastTransaction = Transaction::whereDate('tanggal_transaksi', Carbon::today())
             ->orderBy('id', 'desc')
             ->first();
         $nextNumber = $lastTransaction ? intval(substr($lastTransaction->nomor_struk, -4)) + 1 : 1;
         $nomorStruk = "TRX-{$today}-" . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
 
-        // 🔹 Buat transaksi utama
-        $transaction = \App\Models\Transaction::create([
+        // 🔹 convert uang dibayar dari "8.000" → 8000
+        $uangDibayar = (int) str_replace('.', '', $request->uang_dibayar);
+
+        $transaction = Transaction::create([
             'nomor_struk' => $nomorStruk,
-            'shift_id' => $shift->id, // ✅ sudah masuk shift
+            'shift_id' => $shift->id,
             'tanggal_transaksi' => now(),
             'total' => 0,
-            'uang_dibayar' => $request->uang_dibayar,
+            'uang_dibayar' => $uangDibayar,
             'kembalian' => 0,
         ]);
 
         foreach ($request->items as $item) {
-            $product = \App\Models\Product::findOrFail($item['product_id']);
+            $product = Product::findOrFail($item['product_id']);
 
             $harga = $product->harga;
             $subtotal = $harga * $item['qty'];
             $total += $subtotal;
 
-            \App\Models\TransactionItem::create([
+            TransactionItem::create([
                 'transaction_id' => $transaction->id,
                 'product_id' => $product->id,
                 'qty' => $item['qty'],
@@ -80,20 +80,21 @@ public function store(Request $request)
 
         $transaction->update([
             'total' => $total,
-            'kembalian' => $request->uang_dibayar - $total,
+            'kembalian' => $uangDibayar - $total,
         ]);
 
         DB::commit();
 
-        return redirect()->route('transactions.create')
+        return redirect()->route('kasir.create')
             ->with('success', 'Transaksi berhasil disimpan!')
-            ->with('print_id', $transaction->id); // opsional cetak struk
+            ->with('print_id', $transaction->id);
 
     } catch (\Exception $e) {
         DB::rollBack();
         return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
     }
 }
+
 
 
 
