@@ -7,22 +7,20 @@
         {{ session('success') }}
 
         @if(session('print_id'))
-            <a href="{{ route('transactions.receipt', session('print_id')) }}" 
-               target="_blank" 
+            <a href="{{ route('transactions.receipt', session('print_id')) }}"
+               target="_blank"
                class="btn btn-sm btn-primary">
                 Cetak Struk
             </a>
         @endif
     </div>
 @endif
+
 <div class="container">
     <h2 class="mb-4">Tambah Transaksi</h2>
 
     @if(session('error'))
         <div class="alert alert-danger">{{ session('error') }}</div>
-    @endif
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
     <form action="{{ route('transactions.store') }}" method="POST">
@@ -77,7 +75,8 @@
                 <option value="50000">50.000</option>
                 <option value="100000">100.000</option>
             </select>
-            <input type="number" name="uang_dibayar" id="uang_dibayar" class="form-control" placeholder="Atau isi manual" required>
+            <!-- ubah ke text supaya bisa diformat -->
+            <input type="text" name="uang_dibayar" id="uang_dibayar" class="form-control" placeholder="Atau isi manual" required>
         </div>
 
         <div class="mb-3">
@@ -94,7 +93,12 @@ document.addEventListener("DOMContentLoaded", function () {
     let rowIndex = 1;
 
     function formatRupiah(angka) {
+        if (!angka) return "0";
         return angka.toLocaleString('id-ID');
+    }
+
+    function parseRupiah(str) {
+        return parseInt(str.replace(/\./g, "").replace(/[^0-9]/g, "")) || 0;
     }
 
     function updateRow(row) {
@@ -102,13 +106,27 @@ document.addEventListener("DOMContentLoaded", function () {
         let qty = parseInt(row.querySelector(".qty-input").value || 0);
         let subtotal = harga * qty;
 
-        // simpan angka asli ke data-subtotal
         row.dataset.subtotal = subtotal;
 
         row.querySelector(".harga").textContent = formatRupiah(harga);
         row.querySelector(".subtotal").textContent = formatRupiah(subtotal);
 
         updateTotal();
+    }
+
+    function updateUangSelect(total) {
+        let uangSelect = document.getElementById("uang-select");
+
+        let existing = uangSelect.querySelector("option[data-total='true']");
+        if (existing) existing.remove();
+
+        if (total > 0) {
+            let option = document.createElement("option");
+            option.value = total;
+            option.textContent = total.toLocaleString('id-ID') + " (Total Belanja)";
+            option.dataset.total = "true";
+            uangSelect.insertBefore(option, uangSelect.firstChild.nextSibling);
+        }
     }
 
     function updateTotal() {
@@ -120,37 +138,66 @@ document.addEventListener("DOMContentLoaded", function () {
 
         document.getElementById("total").value = formatRupiah(total);
 
-        let uang = parseInt(document.getElementById("uang_dibayar").value || 0);
-        document.getElementById("kembalian").value = formatRupiah(uang - total);
+        updateUangSelect(total);
+
+        let uang = parseRupiah(document.getElementById("uang_dibayar").value || "0");
+        let kembalian = uang - total;
+        document.getElementById("kembalian").value = formatRupiah(kembalian >= 0 ? kembalian : 0);
     }
 
-    // Tambah baris
-    document.getElementById("add-row").addEventListener("click", function () {
-        let newRow = document.querySelector("#items-table tbody tr").cloneNode(true);
-        newRow.querySelectorAll("input, select").forEach(input => {
-            input.value = "";
-        });
-        newRow.querySelector(".harga").textContent = "0";
-        newRow.querySelector(".subtotal").textContent = "0";
-        newRow.dataset.subtotal = 0;
-
-        newRow.querySelector(".product-select").setAttribute("name", `items[${rowIndex}][product_id]`);
-        newRow.querySelector(".qty-input").setAttribute("name", `items[${rowIndex}][qty]`);
-        rowIndex++;
-
-        document.querySelector("#items-table tbody").appendChild(newRow);
+    // Format input uang_dibayar saat ketik
+    document.getElementById("uang_dibayar").addEventListener("input", function(e) {
+        let value = parseRupiah(e.target.value);
+        e.target.value = value > 0 ? formatRupiah(value) : "";
+        updateTotal();
     });
+
+    // Tambah baris
+// Tambah baris
+document.getElementById("add-row").addEventListener("click", function () {
+    let newRow = document.querySelector("#items-table tbody tr").cloneNode(true);
+
+    // Reset field
+    newRow.querySelectorAll("input, select").forEach(input => {
+        if (input.classList.contains("qty-input")) {
+            input.value = 1; // ✅ qty default 1
+        } else {
+            input.value = "";
+        }
+        input.style.backgroundColor = "";
+    });
+
+    newRow.querySelector(".harga").textContent = "0";
+    newRow.querySelector(".subtotal").textContent = "0";
+    newRow.dataset.subtotal = 0;
+
+    newRow.querySelector(".product-select").setAttribute("name", `items[${rowIndex}][product_id]`);
+    newRow.querySelector(".qty-input").setAttribute("name", `items[${rowIndex}][qty]`);
+    rowIndex++;
+
+    document.querySelector("#items-table tbody").appendChild(newRow);
+    updateRow(newRow);
+});
+
 
     // Event delegation
     document.addEventListener("change", function (e) {
-        if (e.target.classList.contains("product-select") || e.target.classList.contains("qty-input")) {
+        if (e.target.classList.contains("product-select")) {
+            updateRow(e.target.closest("tr"));
+            if (e.target.value) {
+                e.target.style.backgroundColor = "#d1ecf1";
+                e.target.style.color = "#000";
+            } else {
+                e.target.style.backgroundColor = "";
+                e.target.style.color = "";
+            }
+        }
+        if (e.target.classList.contains("qty-input")) {
             updateRow(e.target.closest("tr"));
         }
         if (e.target.id === "uang-select") {
-            document.getElementById("uang_dibayar").value = e.target.value;
-            updateTotal();
-        }
-        if (e.target.id === "uang_dibayar") {
+            let val = e.target.value;
+            document.getElementById("uang_dibayar").value = val ? formatRupiah(parseInt(val)) : "";
             updateTotal();
         }
     });
@@ -163,5 +210,32 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 </script>
+@if(session('print_id'))
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const url = "{{ route('transactions.receipt', session('print_id')) }}";
+
+    // iframe tersembunyi
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    iframe.src = url;
+
+    document.body.appendChild(iframe);
+
+    iframe.onload = function () {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+
+        // hapus iframe setelah print dipanggil
+        setTimeout(() => iframe.remove(), 3000);
+    };
+});
+</script>
+@endif
 
 @endsection
