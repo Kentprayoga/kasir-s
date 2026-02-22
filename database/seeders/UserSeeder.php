@@ -16,7 +16,6 @@ class UserSeeder extends Seeder
             'email' => 'sasalero@kasir.com',
             'password' => Hash::make('sasalero'), // Pastikan password di-hash
         ]);
-
         // Membuat 10 user tambahan menggunakan factory
         User::factory(10)->create();
     }
