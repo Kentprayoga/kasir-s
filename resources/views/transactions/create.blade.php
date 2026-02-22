@@ -7,8 +7,8 @@
         {{ session('success') }}
 
         @if(session('print_id'))
-            <a href="{{ route('transactions.receipt', session('print_id')) }}" 
-               target="_blank" 
+            <a href="{{ route('transactions.receipt', session('print_id')) }}"
+               target="_blank"
                class="btn btn-sm btn-primary">
                 Cetak Struk
             </a>
@@ -164,7 +164,7 @@ document.getElementById("add-row").addEventListener("click", function () {
         } else {
             input.value = "";
         }
-        input.style.backgroundColor = ""; 
+        input.style.backgroundColor = "";
     });
 
     newRow.querySelector(".harga").textContent = "0";
@@ -185,8 +185,8 @@ document.getElementById("add-row").addEventListener("click", function () {
         if (e.target.classList.contains("product-select")) {
             updateRow(e.target.closest("tr"));
             if (e.target.value) {
-                e.target.style.backgroundColor = "#d1ecf1"; 
-                e.target.style.color = "#000"; 
+                e.target.style.backgroundColor = "#d1ecf1";
+                e.target.style.color = "#000";
             } else {
                 e.target.style.backgroundColor = "";
                 e.target.style.color = "";
@@ -210,5 +210,32 @@ document.getElementById("add-row").addEventListener("click", function () {
     });
 });
 </script>
+@if(session('print_id'))
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const url = "{{ route('transactions.receipt', session('print_id')) }}";
+
+    // iframe tersembunyi
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    iframe.src = url;
+
+    document.body.appendChild(iframe);
+
+    iframe.onload = function () {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+
+        // hapus iframe setelah print dipanggil
+        setTimeout(() => iframe.remove(), 3000);
+    };
+});
+</script>
+@endif
 
 @endsection
