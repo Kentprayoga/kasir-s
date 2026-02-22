@@ -14,9 +14,8 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'SASALERO',
             'email' => 'sasalero@kasir.com',
-            'password' => Hash::make('sasalero'), // Pastikan password di-hash
+            'password' => Hash::make('botak'), // Pastikan password di-hash
         ]);
         // Membuat 10 user tambahan menggunakan factory
-        User::factory(10)->create();
     }
 }
