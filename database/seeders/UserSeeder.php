@@ -4,8 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
-use App\Models\User; // Import model User
+use App\Models\User;
 
 class UserSeeder extends Seeder
 {
@@ -18,11 +17,7 @@ class UserSeeder extends Seeder
             'password' => Hash::make('sasalero'), // Pastikan password di-hash
         ]);
 
-        // Opsional: Menambahkan lebih banyak user menggunakan factory atau manual
-        // User::create([
-        //     'name' => 'Jane Smith',
-        //     'email' => 'janesmith@example.com',
-        //     'password' => Hash::make('password123'),
-        // ]);
+        // Membuat 10 user tambahan menggunakan factory
+        User::factory(10)->create();
     }
 }
